@@ -41,4 +41,6 @@ I logged at minimum and I could have added MCD UUID to see the flow of the reque
 
 I did in my opinion the closest thing to open close principle to add new types of books, U need to subclass Book and implement a new field in BookType Enum.
 
+I din't use map struct to map objects only becose there where few of them and then I should have found a trik to take the mapper in the BookType Enum. SO I made the mapping by my self.
+
 If u want me to imporve something please let me know, I can work on it.
