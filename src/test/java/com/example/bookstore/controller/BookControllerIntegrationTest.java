@@ -157,22 +157,11 @@ public class BookControllerIntegrationTest {
                 .andExpect(jsonPath("$.content[0].title").value("Effective Java"))
                 .andExpect(jsonPath("$.content[0].author").value("author2"))
                 .andExpect(jsonPath("$.content[0].basePrice").value(50.0))
-                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
-                .andExpect(jsonPath("$.pageable.pageSize").value(10))
-                .andExpect(jsonPath("$.pageable.sort.empty").value(true))
-                .andExpect(jsonPath("$.pageable.sort.sorted").value(false))
-                .andExpect(jsonPath("$.pageable.sort.unsorted").value(true))
-                .andExpect(jsonPath("$.last").value(true))
-                .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.totalPages").value(1))
-                .andExpect(jsonPath("$.size").value(10))
-                .andExpect(jsonPath("$.number").value(0))
-                .andExpect(jsonPath("$.sort.empty").value(true))
-                .andExpect(jsonPath("$.sort.sorted").value(false))
-                .andExpect(jsonPath("$.sort.unsorted").value(true))
-                .andExpect(jsonPath("$.first").value(true))
-                .andExpect(jsonPath("$.numberOfElements").value(1))
-                .andExpect(jsonPath("$.empty").value(false));
+                .andExpect(jsonPath("$.page.size").value(10))
+                .andExpect(jsonPath("$.page.number").value(0))
+                .andExpect(jsonPath("$.page.totalElements").value(1))
+                .andExpect(jsonPath("$.page.totalPages").value(1))
+        ;
     }
 
     @Test
