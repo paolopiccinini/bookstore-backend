@@ -1,7 +1,6 @@
 package com.example.bookstore.entity;
 
 import com.example.bookstore.dto.BookRequest;
-
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;

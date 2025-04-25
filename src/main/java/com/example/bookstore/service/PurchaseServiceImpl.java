@@ -1,16 +1,15 @@
 package com.example.bookstore.service;
 
-import java.util.List;
-
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Customer;
 import com.example.bookstore.repository.BookRepository;
 import com.example.bookstore.repository.CustomerRepository;
-
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -20,6 +19,7 @@ public class PurchaseServiceImpl implements PurchaseService{
     
     private final CustomerRepository customerRepo;
 
+    @Transactional
     public double calculatePrice(List<String> isbns) {
         var username = SecurityContextHolder.getContext().getAuthentication().getName();
         var books = bookRepo.findAllByIsbnIn(isbns);
@@ -47,6 +47,7 @@ public class PurchaseServiceImpl implements PurchaseService{
         return total;
     }
 
+    @Transactional(readOnly = true)
     public int getLoyaltyPoints() {
         var username = SecurityContextHolder.getContext().getAuthentication().getName();
         return customerRepo.findById(username).map(Customer::getLoyaltyPoints).orElse(0);

@@ -1,26 +1,16 @@
 package com.example.bookstore.controller;
 
 import com.example.bookstore.dto.BookRequest;
+import com.example.bookstore.dto.BookResponse;
 import com.example.bookstore.dto.BookType;
 import com.example.bookstore.dto.ErrorResponse;
 import com.example.bookstore.service.BookService;
-import com.example.bookstore.service.UserDetailsServiceImpl;
 import com.example.bookstore.util.Constants;
 import com.example.bookstore.util.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,23 +18,23 @@ import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.bookstore.dto.BookResponse;
-import com.example.bookstore.service.BookServiceImpl;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.List;
+import java.util.Set;
+
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(BooksController.class)
-@ExtendWith(SpringExtension.class)
-// I've not understood why @WithMockUser is not working here
-// I set a breakpoint in the jwt filter and is not passing from there
-// also without the below annotation
 @AutoConfigureMockMvc(addFilters = false)
 class BooksControllerTest {
     @Autowired
@@ -66,10 +56,13 @@ class BooksControllerTest {
     @BeforeEach
     public void setup() {
         JacksonTester.initFields(this, new ObjectMapper());
+        var user = new User("user", "password", Set.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        when(userDetailsService.loadUserByUsername(eq("user"))).thenReturn(user);
     }
 
     @Test
     @DisplayName("GIVEN a valid BookRequest WHEN createBook THEN a valid BookResponse is returned")
+    @WithMockUser
     void createBookCreated() throws Exception {
         var bookRequest = new BookRequest();
         bookRequest.setBookType(BookType.NEW_RELEASE);
@@ -162,10 +155,6 @@ class BooksControllerTest {
                 .andExpect(status().isNoContent());
     }
 
-    // The order of the json is messed
-    // I have to find another way to test this
-    // it's too painful field by field for the moment
-    @Disabled
     @Test
     @DisplayName("GIVEN a valid request WHEN getBooks THEN a Page of BookResponse is returned")
     void getBooksOk() throws Exception {
@@ -188,6 +177,25 @@ class BooksControllerTest {
                                 .param("maxPrice", "2.0")
                                 )
                 .andExpect(status().isOk())
-                .andExpect(content().string(pageBookResponseJacksonTester.write(page).getJson()));
+                .andExpect(jsonPath("$.content[0].isbn").value("1"))
+                .andExpect(jsonPath("$.content[0].title").value("title"))
+                .andExpect(jsonPath("$.content[0].author").value("Author"))
+                .andExpect(jsonPath("$.content[0].basePrice").value(15.4))
+                .andExpect(jsonPath("$.pageable.pageNumber").value(0))
+                .andExpect(jsonPath("$.pageable.pageSize").value(10))
+                .andExpect(jsonPath("$.pageable.sort.empty").value(true))
+                .andExpect(jsonPath("$.pageable.sort.sorted").value(false))
+                .andExpect(jsonPath("$.pageable.sort.unsorted").value(true))
+                .andExpect(jsonPath("$.last").value(true))
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.totalPages").value(1))
+                .andExpect(jsonPath("$.size").value(10))
+                .andExpect(jsonPath("$.number").value(0))
+                .andExpect(jsonPath("$.sort.empty").value(true))
+                .andExpect(jsonPath("$.sort.sorted").value(false))
+                .andExpect(jsonPath("$.sort.unsorted").value(true))
+                .andExpect(jsonPath("$.first").value(true))
+                .andExpect(jsonPath("$.numberOfElements").value(1))
+                .andExpect(jsonPath("$.empty").value(false));
     }
 }

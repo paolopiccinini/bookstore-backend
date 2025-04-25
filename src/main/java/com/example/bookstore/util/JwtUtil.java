@@ -1,22 +1,26 @@
 package com.example.bookstore.util;
 
-import java.util.Date;
-
-import javax.crypto.SecretKey;
-
-import org.springframework.stereotype.Component;
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import javax.crypto.SecretKey;
+import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private final SecretKey secretKey = Keys.hmacShaKeyFor("your-256-bit-secret-your-256-bit-secret".getBytes());
-    private final long expirationMillis = 1000 * 60 * 60; // 1 hour
+    private final SecretKey secretKey;
+    private final long expirationMillis;
+
+    public JwtUtil(@Value("${com.example.bookstore.jwt.expiration-time}") Long expirationTimeMills, @Value("${com.example.bookstore.secretKey}") String secret) {
+        secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        this.expirationMillis = expirationTimeMills;
+    }
 
     public String extractUsername(String token) {
         return parseToken(token).getPayload().getSubject();

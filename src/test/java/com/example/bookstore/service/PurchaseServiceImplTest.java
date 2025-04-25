@@ -10,12 +10,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,6 +21,11 @@ import org.springframework.security.core.userdetails.User;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -72,6 +71,7 @@ class PurchaseServiceImplTest {
 
         var result = sut.calculatePrice(List.of());
         Assertions.assertEquals(74.0, result);
+        mockedStaticClass.verify(SecurityContextHolder::getContext);
     }
 
     // 10 + 80 * 0.75 + 60 * 0.9 = 124
@@ -89,6 +89,7 @@ class PurchaseServiceImplTest {
 
         var result = sut.calculatePrice(List.of());
         Assertions.assertEquals(124.0, result);
+        mockedStaticClass.verify(SecurityContextHolder::getContext);
     }
 
     // 10 + 80 * 0.75 = 70
@@ -108,6 +109,7 @@ class PurchaseServiceImplTest {
 
         var result = sut.calculatePrice(List.of());
         Assertions.assertEquals(70.0, result);
+        mockedStaticClass.verify(SecurityContextHolder::getContext);
     }
 
 

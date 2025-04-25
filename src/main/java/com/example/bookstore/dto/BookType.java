@@ -4,7 +4,6 @@ import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.NewReleaseBook;
 import com.example.bookstore.entity.OldEditionBook;
 import com.example.bookstore.entity.RegularBook;
-
 import lombok.Getter;
 
 @Getter

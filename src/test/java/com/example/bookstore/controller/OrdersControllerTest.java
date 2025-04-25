@@ -1,32 +1,25 @@
 package com.example.bookstore.controller;
 
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-
 import com.example.bookstore.service.PurchaseService;
+import com.example.bookstore.util.Constants;
+import com.example.bookstore.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.bookstore.service.UserDetailsServiceImpl;
-import com.example.bookstore.util.Constants;
-import com.example.bookstore.util.JwtUtil;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(OrdersController.class)
-@ActiveProfiles("test")
-// I've not understood why @WithMockUser is not working here
-// I set a breakpoint in the jwt filter and is not passing from there
-// also without the below annotation
 @AutoConfigureMockMvc(addFilters = false)
 class OrdersControllerTest {
     @Autowired
@@ -55,8 +48,8 @@ class OrdersControllerTest {
     }
 
     @Test
-    @DisplayName("Given the user by 10 book WHEN buyBooks THEN the total price is calculated")
-    void getLoyaltyPoints() throws Exception {
+    @DisplayName("Given the user wants to know his loyalty points WHEN getLoyaltyPoints THEN the points are returned")
+    void getLoyaltyPointsOk() throws Exception {
         when(purchaseService.getLoyaltyPoints()).thenReturn(9);
 
         mockMvc.perform(
