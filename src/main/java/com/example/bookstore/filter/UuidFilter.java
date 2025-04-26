@@ -29,10 +29,10 @@ public class UuidFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
-        String uuid = UUID.randomUUID().toString();
+        var uuid = UUID.randomUUID().toString();
         MDC.put(CORRELATION_ID_HEADER, uuid);
         try {
-            HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
+            var wrappedRequest = new HttpServletRequestWrapper(request) {
                 @Override
                 public String getHeader(String name) {
                     if (CORRELATION_ID_HEADER.equalsIgnoreCase(name)) {

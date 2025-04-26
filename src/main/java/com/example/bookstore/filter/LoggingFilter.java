@@ -23,14 +23,14 @@ public class LoggingFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-        String uri = request.getRequestURI();
+        var uri = request.getRequestURI();
         if(!uri.startsWith("/auth") || uri.startsWith("/books") || uri.startsWith(("/orders"))) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        ContentCachingRequestWrapper wrappedRequest = new ContentCachingRequestWrapper(request);
-        ContentCachingResponseWrapper wrappedResponse = new ContentCachingResponseWrapper(response);
+        var wrappedRequest = new ContentCachingRequestWrapper(request);
+        var wrappedResponse = new ContentCachingResponseWrapper(response);
 
         try {
             filterChain.doFilter(wrappedRequest, wrappedResponse);
@@ -41,11 +41,11 @@ public class LoggingFilter extends OncePerRequestFilter {
         }
     }
     private void logRequest(ContentCachingRequestWrapper request) {
-        String method = request.getMethod();
-        String query = request.getQueryString();
-        String uri = request.getRequestURI();
+        var method = request.getMethod();
+        var query = request.getQueryString();
+        var uri = request.getRequestURI();
         log.info("Incoming Request: {} {}{}", method, uri, (query != null ? "?" + query : ""));
-        String requestBody = new String(request.getContentAsByteArray(), StandardCharsets.UTF_8);
+        var requestBody = new String(request.getContentAsByteArray(), StandardCharsets.UTF_8);
         log.info("Request Body: {}", requestBody);
         log.info("Request Headers:");
         request.getHeaderNames().asIterator().forEachRemaining(headerName -> {
@@ -55,7 +55,7 @@ public class LoggingFilter extends OncePerRequestFilter {
 
     private void logResponse(ContentCachingResponseWrapper response) throws IOException {
         log.info("Response Status: {}", response.getStatus());
-        String body = new String(response.getContentAsByteArray(), StandardCharsets.UTF_8);
+        var body = new String(response.getContentAsByteArray(), StandardCharsets.UTF_8);
         log.info("Response Body: {}", body);
         logger.info("Response Headers:");
         response.getHeaderNames().forEach(headerName -> {
