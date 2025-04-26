@@ -1,18 +1,25 @@
 package com.example.bookstore.service;
 
+import com.example.bookstore.dto.CalculatePriceDto;
+import com.example.bookstore.dto.CalculatePriceResponse;
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Customer;
 import com.example.bookstore.repository.BookRepository;
 import com.example.bookstore.repository.CustomerRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class PurchaseServiceImpl implements PurchaseService{
     
     private final BookRepository bookRepo;
@@ -20,35 +27,52 @@ public class PurchaseServiceImpl implements PurchaseService{
     private final CustomerRepository customerRepo;
 
     @Transactional
-    public double calculatePrice(List<String> isbns) {
+    public CalculatePriceResponse calculatePrice(Set<String> isbns) {
+        log.info("Calculating price getting logged user");
         var username = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("finding books");
         var books = bookRepo.findAllByIsbnIn(isbns);
+        log.info("finding customer");
         var customer = customerRepo.findById(username).orElse(new Customer(username));
-
+        log.info("Calculating the total");
         double total = books.stream().mapToDouble(book -> book.calculatePrice(books.size())).sum();
 
-        
+
         customer.setUsername(username);
         customer.addLoyaltyPoint(books.size());
-
+        log.info("Updating loyalty points {}", customer.getLoyaltyPoints());
+        final var atomicTotal = new AtomicReference<Double>(total);
         if (customer.getLoyaltyPoints() >= 10) {
+            log.info("loyalty points >= 10 calculating discount");
             // remove the min price to increase revenue
             // I removed the calculated price not the base one
             // shall we reset the points if no discount is applied?
-            total -= books.stream()
-                .filter(Book::isDiscountableWithLoyalty)
-                .mapToDouble(book -> book.calculatePrice(books.size()))
-                .min()
-                .orElse(0.0);
+            books.stream()
+                    .filter(Book::isDiscountableWithLoyalty)
+                    .reduce((a, b) -> a.calculatePrice(books.size()) > b.calculatePrice(books.size()) ? b : a)
+                    .ifPresent(book -> {
+                        atomicTotal.updateAndGet(v -> v - book.calculatePrice(books.size()));
+                        book.setBasePrice(0);
+                    });
+            log.info("loyalty points resetting to 0");
             customer.setLoyaltyPoints(0);
         }
-
+        var result = new CalculatePriceResponse();
+        result.setBooks(books.stream().map(book -> new CalculatePriceDto(book, books.size())).collect(Collectors.toSet()));
+        result.setTotal(atomicTotal.get());
+        result.setLoyaltyPoints(customer.getLoyaltyPoints());
+        result.setSaved(books.stream().mapToDouble(Book::getBasePrice).sum() - atomicTotal.get());
+        var difference = new HashSet<>(isbns);
+        difference.removeAll(books.stream().map(Book::getIsbn).collect(Collectors.toSet()));
+        result.setIsbnsNotFound(difference);
+        log.info("Updating customer");
         customerRepo.save(customer);
-        return total;
+        return result;
     }
 
     @Transactional(readOnly = true)
     public int getLoyaltyPoints() {
+        log.info("Getting points fo the logged user");
         var username = SecurityContextHolder.getContext().getAuthentication().getName();
         return customerRepo.findById(username).map(Customer::getLoyaltyPoints).orElse(0);
     }

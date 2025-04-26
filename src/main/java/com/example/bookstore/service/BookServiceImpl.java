@@ -1,12 +1,12 @@
 package com.example.bookstore.service;
 
-import com.example.bookstore.dto.BookRequest;
-import com.example.bookstore.dto.BookResponse;
+import com.example.bookstore.dto.BookDto;
 import com.example.bookstore.dto.BookType;
 import com.example.bookstore.entity.Book;
 import com.example.bookstore.exception.BookNotFoundException;
 import com.example.bookstore.repository.BookRepository;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,23 +18,26 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class BookServiceImpl implements BookService {
 
     private final BookRepository bookRepo;
 
     @Override
     @Transactional
-    public BookResponse createBook(BookRequest book) {
+    public BookDto createBook(BookDto book) {
         return bookRepo.save(book.convertToBook()).convertToDto();
     }
 
     @Override
     @Transactional
-    public BookResponse updateBook(BookRequest book) {
+    public BookDto updateBook(BookDto book) {
         Book existingBook = bookRepo.findByIsbn(book.getIsbn())
                 .orElseThrow(() -> new BookNotFoundException(book.getIsbn()));
+        log.info("Book found deleting");
         bookRepo.delete(existingBook);
         bookRepo.flush();
+        log.info("Creating new book");
         return bookRepo.save(book.convertToBook()).convertToDto();
     }
 
@@ -47,14 +50,15 @@ public class BookServiceImpl implements BookService {
 
     @Override
     @Transactional(readOnly = true)
-    public BookResponse getBook(String isbn) {
+    public BookDto getBook(String isbn) {
+        log.info("Serarching book");
         return bookRepo.findByIsbn(isbn).map(Book::convertToDto).orElseThrow(() -> new BookNotFoundException(isbn));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<BookResponse> getFilteredBooks(String title, String author, BookType bookType,
-                                   Double minPrice, Double maxPrice, Pageable pageable) {
+    public Page<BookDto> getFilteredBooks(String title, String author, BookType bookType,
+                                          Double minPrice, Double maxPrice, Pageable pageable) {
         Specification<Book> spec = Specification.where(null);
 
         if (title != null) {
@@ -72,12 +76,14 @@ public class BookServiceImpl implements BookService {
         if (maxPrice != null) {
             spec = spec.and((root, _, cb) -> cb.lessThanOrEqualTo(root.get("basePrice"), maxPrice));
         }
-
+        log.info("Searching books");
         var bookPage = bookRepo.findAll(spec, pageable);
+        log.info("Found: {}", bookPage);
+        log.info("Converting into DTO");
         var bookResponses = bookPage.getContent().stream()
             .map(Book::convertToDto)
             .collect(Collectors.toList());
-
+        log.info("Converted");
         return new PageImpl<>(bookResponses, pageable, bookPage.getTotalElements());
     }
 }

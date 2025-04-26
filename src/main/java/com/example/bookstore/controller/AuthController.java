@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/auth")
 @AllArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -59,20 +61,22 @@ public class AuthController {
     })
     @PostMapping("/register")
     public ResponseEntity<Void> register(@Valid @RequestBody RegisterRequest request) {
+        log.info("Searching for user with username {}", request.getUsername());
         userRepo.findByUsername(request.getUsername()).ifPresent(_ -> {
                 throw new UserAlreadyPresentException(request.getUsername());
         });;
-
+        log.info("username {} not found", request.getUsername());
         var user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
+        log.info("Searching role {}", "ROLE_" + request.getRole().name());
         var role = roleRepo.findByName("ROLE_" + request.getRole().name())
             .orElseThrow(() -> new RoleNotFoundException(request.getRole().name()));
-
+        log.info("Role found");
         user.getRoles().add(role);
         userRepo.save(user);
-
+        log.info("User created");
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
@@ -90,9 +94,10 @@ public class AuthController {
     })
     @PostMapping("/login")
     public JwtToken login(@Valid @RequestBody LoginRequest user) {
+        log.info("Authentication the user");
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-
+        log.info("user authenticated generating the token");
         String token = jwtUtil.generateToken(user.getUsername());
         return new JwtToken(token);
     }

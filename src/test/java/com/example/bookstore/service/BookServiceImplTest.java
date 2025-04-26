@@ -1,7 +1,6 @@
 package com.example.bookstore.service;
 
-import com.example.bookstore.dto.BookRequest;
-import com.example.bookstore.dto.BookResponse;
+import com.example.bookstore.dto.BookDto;
 import com.example.bookstore.dto.BookType;
 import com.example.bookstore.entity.NewReleaseBook;
 import com.example.bookstore.entity.OldEditionBook;
@@ -36,11 +35,11 @@ class BookServiceImplTest {
     @InjectMocks
     private BookServiceImpl sut;
 
-    private BookRequest bookRequest;
+    private BookDto bookRequest;
 
     @BeforeEach
     public void setUp() {
-        bookRequest = new BookRequest();
+        bookRequest = new BookDto();
         bookRequest.setBasePrice(1.0);
         bookRequest.setBookType(BookType.NEW_RELEASE);
         bookRequest.setAuthor("author");
@@ -115,7 +114,13 @@ class BookServiceImplTest {
     @DisplayName("")
     void getFilteredBooksTest() {
         when(bookRepo.findAll(any(Specification.class), any(Pageable.class))).thenReturn(new PageImpl<>(List.of(new NewReleaseBook(), new OldEditionBook(), new RegularBook()), Pageable.ofSize(10), 3));
-        var expected = new PageImpl<>(List.of(new BookResponse(), new BookResponse(), new BookResponse()), Pageable.ofSize(10), 3);
+        var newBook = new BookDto();
+        newBook.setBookType(BookType.NEW_RELEASE);
+        var oldBook = new BookDto();
+        oldBook.setBookType(BookType.OLD_EDITION);
+        var regularBook = new BookDto();
+        regularBook.setBookType(BookType.REGULAR);
+        var expected = new PageImpl<>(List.of(newBook, oldBook, regularBook), Pageable.ofSize(10), 3);
 
         var result = sut.getFilteredBooks(null, null, null, null, null, Pageable.ofSize(10));
         Assertions.assertEquals(expected, result);

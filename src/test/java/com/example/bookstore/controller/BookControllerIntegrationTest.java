@@ -1,10 +1,9 @@
 package com.example.bookstore.controller;
 
-import com.example.bookstore.dto.BookRequest;
+import com.example.bookstore.dto.BookDto;
 import com.example.bookstore.dto.BookType;
 import com.example.bookstore.util.Constants;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -34,7 +32,7 @@ public class BookControllerIntegrationTest {
     @DisplayName("GIVEN a valid BookRequest WHEN createBook THEN a valid BookResponse is returned")
     @WithMockUser(roles = {"ADMIN"})
     void createBookCreated() throws Exception {
-        var bookRequest = new BookRequest();
+        var bookRequest = new BookDto();
         bookRequest.setBookType(BookType.NEW_RELEASE);
         bookRequest.setAuthor("Author");
         bookRequest.setIsbn("1");
@@ -56,7 +54,7 @@ public class BookControllerIntegrationTest {
     @DisplayName("GIVEN a user with invalid role WHEN createBook THEN a forbidden is returned")
     @WithMockUser(roles = {"CUSTOMER"})
     void createBookForbidden() throws Exception {
-        var bookRequest = new BookRequest();
+        var bookRequest = new BookDto();
         bookRequest.setBookType(BookType.NEW_RELEASE);
         bookRequest.setAuthor("Author");
         bookRequest.setIsbn("1");
@@ -74,7 +72,7 @@ public class BookControllerIntegrationTest {
     @DisplayName("GIVEN a valid BookRequest WHEN updateBook THEN a valid BookResponse is returned")
     @WithMockUser(roles = {"ADMIN"})
     void updateBookOk() throws Exception {
-        var bookRequest = new BookRequest();
+        var bookRequest = new BookDto();
         bookRequest.setBookType(BookType.NEW_RELEASE);
         bookRequest.setAuthor("Author");
         bookRequest.setIsbn("ISBN-001");
@@ -96,7 +94,7 @@ public class BookControllerIntegrationTest {
     @DisplayName("GIVEN a invalid isbn WHEN updateBook THEN a 404 is returned")
     @WithMockUser(roles = {"ADMIN"})
     void updateBookNotFound() throws Exception {
-        var bookRequest = new BookRequest();
+        var bookRequest = new BookDto();
         bookRequest.setBookType(BookType.NEW_RELEASE);
         bookRequest.setAuthor("Author");
         bookRequest.setIsbn("-001");
@@ -114,7 +112,7 @@ public class BookControllerIntegrationTest {
     @DisplayName("GIVEN the user has invalid role WHEN updateBook THEN a 403 is returned")
     @WithMockUser(roles = {"CUSTOMER"})
     void updateBookForbidden() throws Exception {
-        var bookRequest = new BookRequest();
+        var bookRequest = new BookDto();
         bookRequest.setBookType(BookType.NEW_RELEASE);
         bookRequest.setAuthor("Author");
         bookRequest.setIsbn("-001");

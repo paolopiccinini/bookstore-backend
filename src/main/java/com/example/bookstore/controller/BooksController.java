@@ -1,7 +1,6 @@
 package com.example.bookstore.controller;
 
-import com.example.bookstore.dto.BookRequest;
-import com.example.bookstore.dto.BookResponse;
+import com.example.bookstore.dto.BookDto;
 import com.example.bookstore.dto.BookType;
 import com.example.bookstore.dto.ErrorResponse;
 import com.example.bookstore.service.BookService;
@@ -15,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/books")
 @AllArgsConstructor
+@Slf4j
 public class BooksController {
     
     private final BookService bookService;
@@ -36,7 +37,7 @@ public class BooksController {
             description = "Creates a new Book"
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "201",  description = "Book created",content = { @Content(schema = @Schema(implementation = BookResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
+            @ApiResponse(responseCode = "201",  description = "Book created",content = { @Content(schema = @Schema(implementation = BookDto.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "400", description = "Bad request", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "404", description = "Should never happen", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
@@ -45,7 +46,8 @@ public class BooksController {
     })
     @PostMapping
     @Secured("ROLE_ADMIN")
-    public ResponseEntity<BookResponse> createBook(@Valid @RequestBody BookRequest book) {
+    public ResponseEntity<BookDto> createBook(@Valid @RequestBody BookDto book) {
+        log.info("Creating book {}", book);
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBook(book));
     }
 
@@ -54,7 +56,7 @@ public class BooksController {
             description = "Update a Book given the isbn"
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Book updated", content = { @Content(schema = @Schema(implementation = BookResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
+            @ApiResponse(responseCode = "200", description = "Book updated", content = { @Content(schema = @Schema(implementation = BookDto.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "400", description = "Bad request", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "404", description = "Book not found", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
@@ -63,7 +65,8 @@ public class BooksController {
     })
     @PutMapping
     @Secured("ROLE_ADMIN")
-    public BookResponse updateBook(@Valid @RequestBody BookRequest book) {
+    public BookDto updateBook(@Valid @RequestBody BookDto book) {
+        log.info("Updating book {}", book);
         return bookService.updateBook(book);
     }
 
@@ -72,7 +75,7 @@ public class BooksController {
             description = "Get a Book given the isbn"
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Book found", content = { @Content(schema = @Schema(implementation = BookResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
+            @ApiResponse(responseCode = "200", description = "Book found", content = { @Content(schema = @Schema(implementation = BookDto.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "400", description = "Bad request", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "404", description = "Book not found", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
@@ -80,7 +83,8 @@ public class BooksController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
     })
     @GetMapping("/{isbn}")
-    public BookResponse getBook(@PathVariable("isbn") String isbn) {
+    public BookDto getBook(@PathVariable("isbn") String isbn) {
+        log.info("Getting book {}", isbn);
         return bookService.getBook(isbn);
     }
 
@@ -99,6 +103,7 @@ public class BooksController {
     @DeleteMapping("/{isbn}")
     @Secured("ROLE_ADMIN")
     public ResponseEntity<Void> deleteBook(@PathVariable("isbn") String isbn) {
+        log.info("Deleting book {}", isbn);
         bookService.deleteBook(isbn);
         return ResponseEntity.noContent().build();
     }
@@ -108,7 +113,7 @@ public class BooksController {
             description = "Get a list of Books given: title, author, bookType, minPrice, maxPrice, page, size"
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Books retrieved", content = { @Content(array = @ArraySchema(schema = @Schema(implementation = BookResponse.class)), mediaType = Constants.VERSION_1_HEADER) }),
+            @ApiResponse(responseCode = "200", description = "Books retrieved", content = { @Content(array = @ArraySchema(schema = @Schema(implementation = BookDto.class)), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "400", description = "Bad request", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "404", description = "Should never happen", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
@@ -116,7 +121,7 @@ public class BooksController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
     })
     @GetMapping
-    public Page<BookResponse> getBooks(
+    public Page<BookDto> getBooks(
         @RequestParam(required = false) String title,
         @RequestParam(required = false) String author,
         @RequestParam(required = false) BookType bookType,
@@ -124,6 +129,7 @@ public class BooksController {
         @RequestParam(required = false) Double maxPrice,
         @PageableDefault(size = 10) Pageable pageable
     ) {
+        log.info("Getting books title: {}, author: {}, bookType: {}. minPrice: {}, maxPrice: {}, pageable: {}", title, author, bookType, minPrice, maxPrice, pageable);
         return bookService.getFilteredBooks(title, author, bookType, minPrice, maxPrice, pageable);
     }
 }

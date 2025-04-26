@@ -1,5 +1,6 @@
 package com.example.bookstore.controller;
 
+import com.example.bookstore.dto.CalculatePriceResponse;
 import com.example.bookstore.service.PurchaseService;
 import com.example.bookstore.util.Constants;
 import com.example.bookstore.util.JwtUtil;
@@ -12,12 +13,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(OrdersController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -37,14 +37,16 @@ class OrdersControllerTest {
     @Test
     @DisplayName("Given the user by 10 book WHEN buyBooks THEN the total price is calculated")
     void buyBooksOK() throws Exception {
-        when(purchaseService.calculatePrice(anyList())).thenReturn(19.0);
+        var response = new CalculatePriceResponse();
+        response.setTotal(19.1);
+        when(purchaseService.calculatePrice(anySet())).thenReturn(response);
 
         mockMvc.perform(
                         post("/orders")
                         .contentType(Constants.VERSION_1_HEADER)
                         .param("isbns", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"))
                     .andExpect(status().isOk())
-                    .andExpect(content().string("19.0"));
+                    .andExpect(jsonPath("$.total").value(19.1));
     }
 
     @Test

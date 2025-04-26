@@ -1,6 +1,7 @@
 package com.example.bookstore.entity;
 
-import com.example.bookstore.dto.BookRequest;
+import com.example.bookstore.dto.BookDto;
+import com.example.bookstore.dto.BookType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @DiscriminatorValue("REGULAR")
 public class RegularBook extends Book {
     
-    public RegularBook(BookRequest request) {
+    public RegularBook(BookDto request) {
         super(request);
     }
 
@@ -26,5 +27,10 @@ public class RegularBook extends Book {
     @Override
     public boolean isDiscountableWithLoyalty() {
         return true;
+    }
+
+    @Override
+    public BookType getType() {
+        return BookType.REGULAR;
     }
 }

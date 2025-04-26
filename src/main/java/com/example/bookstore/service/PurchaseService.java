@@ -1,9 +1,11 @@
 package com.example.bookstore.service;
 
-import java.util.List;
+import com.example.bookstore.dto.CalculatePriceResponse;
+
+import java.util.Set;
 
 public interface PurchaseService {
 
-    double calculatePrice(List<String> isbns);
+    CalculatePriceResponse calculatePrice(Set<String> isbns);
     int getLoyaltyPoints();
 }

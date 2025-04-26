@@ -18,11 +18,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.core.userdetails.User;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -66,11 +65,11 @@ class PurchaseServiceImplTest {
         newRelease.setBasePrice(10.0);
         var oldRelease = new OldEditionBook();
         oldRelease.setBasePrice(80.0);
-        when(bookRepo.findAllByIsbnIn(anyList())).thenReturn(List.of(newRelease, oldRelease));
+        when(bookRepo.findAllByIsbnIn(anySet())).thenReturn(Set.of(newRelease, oldRelease));
         when(customerRepo.findById(anyString())).thenReturn(Optional.empty());
 
-        var result = sut.calculatePrice(List.of());
-        Assertions.assertEquals(74.0, result);
+        var result = sut.calculatePrice(Set.of());
+        Assertions.assertEquals(74.0, result.getTotal());
         mockedStaticClass.verify(SecurityContextHolder::getContext);
     }
 
@@ -84,11 +83,11 @@ class PurchaseServiceImplTest {
         oldRelease.setBasePrice(80.0);
         var regularRelease = new RegularBook();
         regularRelease.setBasePrice(60.0);
-        when(bookRepo.findAllByIsbnIn(anyList())).thenReturn(List.of(newRelease, oldRelease, regularRelease));
+        when(bookRepo.findAllByIsbnIn(anySet())).thenReturn(Set.of(newRelease, oldRelease, regularRelease));
         when(customerRepo.findById(anyString())).thenReturn(Optional.empty());
 
-        var result = sut.calculatePrice(List.of());
-        Assertions.assertEquals(124.0, result);
+        var result = sut.calculatePrice(Set.of());
+        Assertions.assertEquals(124.0, result.getTotal());
         mockedStaticClass.verify(SecurityContextHolder::getContext);
     }
 
@@ -102,13 +101,13 @@ class PurchaseServiceImplTest {
         oldRelease.setBasePrice(80.0);
         var regularRelease = new RegularBook();
         regularRelease.setBasePrice(60.0);
-        when(bookRepo.findAllByIsbnIn(anyList())).thenReturn(List.of(newRelease, oldRelease, regularRelease));
+        when(bookRepo.findAllByIsbnIn(anySet())).thenReturn(Set.of(newRelease, oldRelease, regularRelease));
         var customer = new Customer("paolo");
         customer.setLoyaltyPoints(10);
         when(customerRepo.findById(anyString())).thenReturn(Optional.of(customer));
 
-        var result = sut.calculatePrice(List.of());
-        Assertions.assertEquals(70.0, result);
+        var result = sut.calculatePrice(Set.of());
+        Assertions.assertEquals(70.0, result.getTotal());
         mockedStaticClass.verify(SecurityContextHolder::getContext);
     }
 

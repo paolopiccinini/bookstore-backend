@@ -1,5 +1,6 @@
 package com.example.bookstore.controller;
 
+import com.example.bookstore.dto.CalculatePriceResponse;
 import com.example.bookstore.dto.ErrorResponse;
 import com.example.bookstore.service.PurchaseService;
 import com.example.bookstore.util.Constants;
@@ -12,14 +13,16 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Set;
 
 @Tag(name = "Orders", description = "Orders management APIs")
 @RestController
 @RequestMapping("/orders")
 @AllArgsConstructor
+@Slf4j
 public class OrdersController {
 
     private final PurchaseService purchaseService;
@@ -29,7 +32,7 @@ public class OrdersController {
             description = "Register the user with username, password and role"
     )
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Price calculated", content = { @Content(schema = @Schema(implementation = Double.class), mediaType = Constants.VERSION_1_HEADER) }),
+            @ApiResponse(responseCode = "200", description = "Price calculated", content = { @Content(schema = @Schema(implementation = CalculatePriceResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "400", description = "Bad request", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
             @ApiResponse(responseCode = "404", description = "Should never happen", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
@@ -37,7 +40,8 @@ public class OrdersController {
             @ApiResponse(responseCode = "500", description = "Internal server error", content = { @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = Constants.VERSION_1_HEADER) }),
     })
     @PostMapping
-    public double buyBooks(@Valid @NotNull @RequestParam List<String> isbns) {
+    public CalculatePriceResponse buyBooks(@Valid @NotNull @RequestParam Set<String> isbns) {
+        log.info("Calculate prices for isbns {}", isbns);
         return purchaseService.calculatePrice(isbns);
     }
 
@@ -55,6 +59,7 @@ public class OrdersController {
     })
     @GetMapping("/points")
     public int getLoyaltyPoints() {
+        log.info("Getting points");
         return purchaseService.getLoyaltyPoints();
     }
 }

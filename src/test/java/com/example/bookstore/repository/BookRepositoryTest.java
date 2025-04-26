@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @ActiveProfiles("test")
@@ -21,9 +21,9 @@ class BookRepositoryTest {
     @ParameterizedTest(name = "{0} found")
     @MethodSource("validProvider")
     void findAllByIsbnInOk(String isbn) {
-        var result = bookRepository.findAllByIsbnIn(List.of(isbn));
+        var result = bookRepository.findAllByIsbnIn(Set.of(isbn));
         Assertions.assertEquals(1, result.size());
-        Assertions.assertEquals(isbn, result.getFirst().getIsbn());
+        Assertions.assertEquals(isbn, result.iterator().next().getIsbn());
     }
 
     @ParameterizedTest(name = "{0} found")
@@ -37,7 +37,7 @@ class BookRepositoryTest {
     @ParameterizedTest(name = "{0} not found")
     @MethodSource("invalidProvider")
     void findAllByIsbnInKo(String isbn) {
-        var result = bookRepository.findAllByIsbnIn(List.of(isbn));
+        var result = bookRepository.findAllByIsbnIn(Set.of(isbn));
         Assertions.assertTrue(result.isEmpty());
     }
 

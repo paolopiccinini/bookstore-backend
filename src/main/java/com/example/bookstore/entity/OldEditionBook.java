@@ -1,6 +1,7 @@
 package com.example.bookstore.entity;
 
-import com.example.bookstore.dto.BookRequest;
+import com.example.bookstore.dto.BookDto;
+import com.example.bookstore.dto.BookType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @DiscriminatorValue("OLD_EDITION")
 public class OldEditionBook extends Book {
     
-    public OldEditionBook(BookRequest request) {
+    public OldEditionBook(BookDto request) {
         super(request);
     }
 
@@ -38,5 +39,10 @@ public class OldEditionBook extends Book {
     @Override
     public boolean isDiscountableWithLoyalty() {
         return true;
+    }
+
+    @Override
+    public BookType getType() {
+        return BookType.OLD_EDITION;
     }
 }

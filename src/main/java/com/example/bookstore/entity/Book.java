@@ -1,7 +1,7 @@
 package com.example.bookstore.entity;
 
-import com.example.bookstore.dto.BookRequest;
-import com.example.bookstore.dto.BookResponse;
+import com.example.bookstore.dto.BookDto;
+import com.example.bookstore.dto.BookType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +21,7 @@ public abstract class Book {
     private String author;
     private double basePrice;
 
-    public Book(BookRequest request) {
+    public Book(BookDto request) {
         isbn = request.getIsbn();
         title = request.getTitle();
         author = request.getAuthor();
@@ -32,8 +32,10 @@ public abstract class Book {
 
     public abstract boolean isDiscountableWithLoyalty();
 
-    public BookResponse convertToDto() {
-        return new BookResponse(this);
+    public abstract BookType getType();
+
+    public BookDto convertToDto() {
+        return new BookDto(this);
     }
 
 }

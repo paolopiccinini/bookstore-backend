@@ -1,4 +1,4 @@
-
+delete from book;
 INSERT INTO book (id, title, isbn, base_price, book_type, author)
 VALUES
 (1000001, 'The Pragmatic Programmer', 'ISBN-001', 45.0, 'REGULAR', 'author1'),
@@ -14,7 +14,9 @@ VALUES
 (1000011, 'You Don’t Know JS', 'ISBN-011', 30.0, 'OLD_EDITION', 'author11'),
 (1000012, 'Kotlin in Action', 'ISBN-012', 42.0, 'NEW_RELEASE', 'author12');
 
+delete from user_entity;
 INSERT into user_entity(id, username, password) VALUES
 (100000, 'username', '$2a$10$hcOucV6DY/JI6HQfkhEaxep4n/xZFhgh0n5bHfFK40Zf9Ni9.Ltue');
 
+delete from user_entity_roles;
 INSERT into user_entity_roles (user_id, roles_id) VALUES (100000, 1);

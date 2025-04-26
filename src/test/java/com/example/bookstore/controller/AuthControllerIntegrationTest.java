@@ -1,42 +1,30 @@
 package com.example.bookstore.controller;
 
-import com.example.bookstore.dto.ErrorResponse;
-import com.example.bookstore.dto.JwtToken;
 import com.example.bookstore.dto.LoginRequest;
 import com.example.bookstore.dto.RegisterRequest;
 import com.example.bookstore.util.Constants;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.*;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Disabled
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest
 @ActiveProfiles("test")
+@AutoConfigureMockMvc
 class AuthControllerIntegrationTest {
-
-    @LocalServerPort
-    private int port;
-
+    @Autowired
+    private MockMvc mockMvc;
     @Autowired
     private ObjectMapper jacksonObjectMapper;
-
-    private TestRestTemplate restTemplate;
-    private HttpHeaders headers;
-
-    @BeforeEach
-    public void setUp() {
-        restTemplate = new TestRestTemplate();
-        headers = new HttpHeaders();
-        headers.setAccept(List.of(MediaType.valueOf(Constants.VERSION_1_HEADER)));
-        headers.setContentType(MediaType.APPLICATION_JSON);
-    }
 
     @Test
     @DisplayName("GIVEN a Valid RegisterRequest WHEN register THEN a user is created")
@@ -46,11 +34,11 @@ class AuthControllerIntegrationTest {
         registerRequest.setPassword("password");
         registerRequest.setUsername("newuser");
 
-        HttpEntity<String> entity = new HttpEntity<>(jacksonObjectMapper.writeValueAsString(registerRequest), headers);
-
-        ResponseEntity<Void> response = restTemplate.exchange(createURLWithPort("/auth/register"), HttpMethod.POST, entity,
-                Void.class);
-        Assertions.assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        mockMvc.perform(
+                        post("/auth/register")
+                                .contentType(Constants.VERSION_1_HEADER)
+                                .content(jacksonObjectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated());
     }
 
     @Test
@@ -61,12 +49,12 @@ class AuthControllerIntegrationTest {
         registerRequest.setPassword("password");
         registerRequest.setUsername("username");
 
-        HttpEntity<String> entity = new HttpEntity<>(jacksonObjectMapper.writeValueAsString(registerRequest), headers);
-
-        ResponseEntity<ErrorResponse> response = restTemplate.exchange(createURLWithPort("/auth/register"), HttpMethod.POST, entity,
-                ErrorResponse.class);
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        Assertions.assertEquals("User alredy present: username", response.getBody().getMessage());
+        mockMvc.perform(
+                        post("/auth/register")
+                                .contentType(Constants.VERSION_1_HEADER)
+                                .content(jacksonObjectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("User alredy present: username"));
     }
 
     @Test
@@ -76,12 +64,12 @@ class AuthControllerIntegrationTest {
         loginRequest.setPassword("password");
         loginRequest.setUsername("username");
 
-        HttpEntity<String> entity = new HttpEntity<>(jacksonObjectMapper.writeValueAsString(loginRequest), headers);
-
-        ResponseEntity<JwtToken> response = restTemplate.exchange(createURLWithPort("/auth/login"), HttpMethod.POST, entity,
-                JwtToken.class);
-        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
-        Assertions.assertNotNull(response.getBody().getToken());
+        mockMvc.perform(
+                        post("/auth/login")
+                                .contentType(Constants.VERSION_1_HEADER)
+                                .content(jacksonObjectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token").value(Matchers.notNullValue()));
     }
 
     @Test
@@ -91,16 +79,12 @@ class AuthControllerIntegrationTest {
         loginRequest.setPassword("bad");
         loginRequest.setUsername("username");
 
-        HttpEntity<String> entity = new HttpEntity<>(jacksonObjectMapper.writeValueAsString(loginRequest), headers);
-
-        ResponseEntity<ErrorResponse> response = restTemplate.exchange(createURLWithPort("/auth/login"), HttpMethod.POST, entity,
-                ErrorResponse.class);
-        Assertions.assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        Assertions.assertEquals("Bad credentials", response.getBody().getMessage());
-    }
-
-    private String createURLWithPort(String uri) {
-        return "http://localhost:" + port + uri;
+        mockMvc.perform(
+                        post("/auth/login")
+                                .contentType(Constants.VERSION_1_HEADER)
+                                .content(jacksonObjectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Bad credentials"));
     }
 
 }

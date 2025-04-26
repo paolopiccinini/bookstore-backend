@@ -1,4 +1,4 @@
-CREATE TABLE book (
+CREATE TABLE IF NOT EXISTS book (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255) NOT NULL,
     author VARCHAR(255) NOT NULL,
@@ -7,18 +7,18 @@ CREATE TABLE book (
     isbn VARCHAR(13) NOT NULL UNIQUE
 );
 
-CREATE TABLE role (
+CREATE TABLE IF NOT EXISTS role (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE user_entity (
+CREATE TABLE IF NOT EXISTS user_entity (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE user_entity_roles (
+CREATE TABLE IF NOT EXISTS user_entity_roles (
     user_id BIGINT NOT NULL,
     roles_id BIGINT NOT NULL,
     PRIMARY KEY (user_id, roles_id),
@@ -26,12 +26,12 @@ CREATE TABLE user_entity_roles (
     FOREIGN KEY (roles_id) REFERENCES role(id) ON DELETE CASCADE
 );
 
-CREATE TABLE customer (
+CREATE TABLE IF NOT EXISTS customer (
     username VARCHAR(50) PRIMARY KEY,
     loyalty_points INT NOT NULL,
     CONSTRAINT fk_customer_username FOREIGN KEY (username)
         REFERENCES user_entity(username) ON DELETE CASCADE
 );
 
-CREATE unique INDEX idx_book_isbn ON book(isbn);
-create unique INDEX idx_user_username_password on user_entity(username, password);
+CREATE unique INDEX IF NOT EXISTS idx_book_isbn ON book(isbn);
+create unique INDEX IF NOT EXISTS idx_user_username_password on user_entity(username, password);

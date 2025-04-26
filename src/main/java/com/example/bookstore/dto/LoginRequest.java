@@ -3,6 +3,7 @@ package com.example.bookstore.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
 public class LoginRequest {
@@ -12,4 +13,9 @@ public class LoginRequest {
     @Schema(description = "password", example = "super_secret")
     @NotBlank(message = "password can't be blank")
     private String password;
+
+    @ToString.Include(name = "password")
+    public String maskedPassword() {
+        return "****";
+    }
 }

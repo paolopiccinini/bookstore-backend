@@ -1,7 +1,6 @@
 package com.example.bookstore.controller;
 
-import com.example.bookstore.dto.BookRequest;
-import com.example.bookstore.dto.BookResponse;
+import com.example.bookstore.dto.BookDto;
 import com.example.bookstore.dto.BookType;
 import com.example.bookstore.dto.ErrorResponse;
 import com.example.bookstore.service.BookService;
@@ -15,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.json.JacksonTester;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -43,9 +41,7 @@ class BooksControllerTest {
     @MockitoBean
     private BookService bookService;
 
-    private JacksonTester<BookResponse> bookResponseJacksonTester;
-    private JacksonTester<BookRequest> bookRequestJacksonTester;
-    private JacksonTester<Page<BookResponse>> pageBookResponseJacksonTester;
+    private JacksonTester<BookDto> bookDtoJacksonTester;
     private JacksonTester<ErrorResponse> errorResponseJacksonTester;
 
     @MockitoBean
@@ -64,13 +60,13 @@ class BooksControllerTest {
     @DisplayName("GIVEN a valid BookRequest WHEN createBook THEN a valid BookResponse is returned")
     @WithMockUser
     void createBookCreated() throws Exception {
-        var bookRequest = new BookRequest();
+        var bookRequest = new BookDto();
         bookRequest.setBookType(BookType.NEW_RELEASE);
         bookRequest.setAuthor("Author");
         bookRequest.setIsbn("1");
         bookRequest.setTitle("title");
         bookRequest.setBasePrice(15.4);
-        var bookResponse = new BookResponse();
+        var bookResponse = new BookDto();
         bookResponse.setAuthor("Author");
         bookResponse.setIsbn("1");
         bookResponse.setTitle("title");
@@ -80,15 +76,15 @@ class BooksControllerTest {
         mockMvc.perform(
                         post("/books")
                                 .contentType(Constants.VERSION_1_HEADER)
-                                .content(bookRequestJacksonTester.write(bookRequest).getJson()))
+                                .content(bookDtoJacksonTester.write(bookRequest).getJson()))
                 .andExpect(status().isCreated())
-                .andExpect(content().string(bookResponseJacksonTester.write(bookResponse).getJson()));
+                .andExpect(content().string(bookDtoJacksonTester.write(bookResponse).getJson()));
     }
 
     @Test
     @DisplayName("GIVEN a invalid BookRequest WHEN createBook THEN bad request is returned")
     void createBookBadRequest() throws Exception {
-        var bookRequest = new BookRequest();
+        var bookRequest = new BookDto();
         bookRequest.setBookType(null);
         bookRequest.setAuthor("Author");
         bookRequest.setIsbn("1");
@@ -98,7 +94,7 @@ class BooksControllerTest {
         mockMvc.perform(
                         post("/books")
                                 .contentType(Constants.VERSION_1_HEADER)
-                                .content(bookRequestJacksonTester.write(bookRequest).getJson()))
+                                .content(bookDtoJacksonTester.write(bookRequest).getJson()))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(errorResponseJacksonTester.write(errorResponse).getJson()));
     }
@@ -106,13 +102,13 @@ class BooksControllerTest {
     @Test
     @DisplayName("GIVEN a valid BookRequest WHEN updateBook THEN a valid BookResponse is returned")
     void updateBookOk() throws Exception {
-        var bookRequest = new BookRequest();
+        var bookRequest = new BookDto();
         bookRequest.setBookType(BookType.NEW_RELEASE);
         bookRequest.setAuthor("Author");
         bookRequest.setIsbn("1");
         bookRequest.setTitle("title");
         bookRequest.setBasePrice(15.4);
-        var bookResponse = new BookResponse();
+        var bookResponse = new BookDto();
         bookResponse.setAuthor("Author");
         bookResponse.setIsbn("1");
         bookResponse.setTitle("title");
@@ -122,15 +118,15 @@ class BooksControllerTest {
         mockMvc.perform(
                         put("/books")
                                 .contentType(Constants.VERSION_1_HEADER)
-                                .content(bookRequestJacksonTester.write(bookRequest).getJson()))
+                                .content(bookDtoJacksonTester.write(bookRequest).getJson()))
                 .andExpect(status().isOk())
-                .andExpect(content().string(bookResponseJacksonTester.write(bookResponse).getJson()));
+                .andExpect(content().string(bookDtoJacksonTester.write(bookResponse).getJson()));
     }
 
     @Test
     @DisplayName("GIVEN a valid isbn WHEN updateBook THEN a valid BookResponse is returned")
     void getBookOk() throws Exception {
-        var bookResponse = new BookResponse();
+        var bookResponse = new BookDto();
         bookResponse.setAuthor("Author");
         bookResponse.setIsbn("1");
         bookResponse.setTitle("title");
@@ -141,7 +137,7 @@ class BooksControllerTest {
                         get("/books/1234")
                                 .contentType(Constants.VERSION_1_HEADER))
                 .andExpect(status().isOk())
-                .andExpect(content().string(bookResponseJacksonTester.write(bookResponse).getJson()));
+                .andExpect(content().string(bookDtoJacksonTester.write(bookResponse).getJson()));
     }
 
     @Test
@@ -158,7 +154,7 @@ class BooksControllerTest {
     @Test
     @DisplayName("GIVEN a valid request WHEN getBooks THEN a Page of BookResponse is returned")
     void getBooksOk() throws Exception {
-        var bookResponse = new BookResponse();
+        var bookResponse = new BookDto();
         bookResponse.setAuthor("Author");
         bookResponse.setIsbn("1");
         bookResponse.setTitle("title");

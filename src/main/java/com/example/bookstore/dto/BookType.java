@@ -11,7 +11,7 @@ public enum BookType {
     NEW_RELEASE(NewReleaseBook.class) {
 
         @Override
-        public Book createBookInstance(BookRequest request) {
+        public Book createBookInstance(BookDto request) {
             return new NewReleaseBook(request);
         }
        
@@ -19,7 +19,7 @@ public enum BookType {
     REGULAR(RegularBook.class) {
 
         @Override
-        public Book createBookInstance(BookRequest request) {
+        public Book createBookInstance(BookDto request) {
             return new RegularBook(request);
         }
 
@@ -27,7 +27,7 @@ public enum BookType {
     OLD_EDITION(OldEditionBook.class) {
 
         @Override
-        public Book createBookInstance(BookRequest request) {
+        public Book createBookInstance(BookDto request) {
             return new OldEditionBook(request);
         }
 
@@ -39,6 +39,6 @@ public enum BookType {
 
     private Class<? extends Book> clazz;
 
-    public abstract Book createBookInstance(BookRequest request);
+    public abstract Book createBookInstance(BookDto request);
     
 }

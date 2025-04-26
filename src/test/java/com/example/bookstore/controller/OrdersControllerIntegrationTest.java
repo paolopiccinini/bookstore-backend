@@ -2,7 +2,6 @@ package com.example.bookstore.controller;
 
 import com.example.bookstore.util.Constants;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +13,8 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@Disabled
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
@@ -37,7 +34,7 @@ public class OrdersControllerIntegrationTest {
                                 .contentType(Constants.VERSION_1_HEADER)
                                 .param("isbns", "ISBN-001", "ISBN-002", "ISBN-003", "ISBN-004", "ISBN-005", "ISBN-006", "ISBN-007", "ISBN-008", "ISBN-009", "ISBN-010", "ISBN-011", "ISBN-012"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("503.9"));
+                .andExpect(jsonPath("$.total").value(463.4));
     }
 
     @Test
@@ -49,7 +46,7 @@ public class OrdersControllerIntegrationTest {
                                 .contentType(Constants.VERSION_1_HEADER)
                                 .param("isbns", "ISBN-001", "ISBN-002", "ISBN-003"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("127.5"));
+                .andExpect(jsonPath("$.total").value(95.0));
     }
 
     @Test
@@ -61,7 +58,7 @@ public class OrdersControllerIntegrationTest {
                                 .contentType(Constants.VERSION_1_HEADER)
                                 .param("isbns", "ISBN-001", "ISBN-002"))
                 .andExpect(status().isOk())
-                .andExpect(content().string("85.0"));
+                .andExpect(jsonPath("$.total").value(40.0));
     }
 
     @Test
