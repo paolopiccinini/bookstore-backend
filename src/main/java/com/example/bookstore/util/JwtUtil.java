@@ -28,8 +28,8 @@ public class JwtUtil {
 
     public boolean validateToken(String token) {
         try {
-            Jws<Claims> parsed = parseToken(token);
-            Date expiration = parsed.getPayload().getExpiration();
+            var parsed = parseToken(token);
+            var expiration = parsed.getPayload().getExpiration();
             return expiration != null && expiration.after(new Date());
         } catch (JwtException | IllegalArgumentException e) {
             return false;
@@ -37,8 +37,8 @@ public class JwtUtil {
     }
 
     public String generateToken(String username) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expirationMillis);
+        var now = new Date();
+        var expiryDate = new Date(now.getTime() + expirationMillis);
 
         return Jwts.builder()
                 .subject(username)
