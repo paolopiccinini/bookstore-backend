@@ -94,7 +94,7 @@ public class AuthController {
     })
     @PostMapping("/login")
     public JwtToken login(@Valid @RequestBody LoginRequest user) {
-        log.info("Authentication the user");
+        log.info("Authentication the user {}", user);
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
         log.info("user authenticated generating the token");

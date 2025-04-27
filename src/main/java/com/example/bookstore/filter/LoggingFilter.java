@@ -1,9 +1,13 @@
 package com.example.bookstore.filter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
@@ -16,7 +20,10 @@ import java.nio.charset.StandardCharsets;
 
 @Component
 @Slf4j
+@AllArgsConstructor
 public class LoggingFilter extends OncePerRequestFilter {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -40,12 +47,17 @@ public class LoggingFilter extends OncePerRequestFilter {
             wrappedResponse.copyBodyToResponse(); // Important: copy body back to the original response
         }
     }
-    private void logRequest(ContentCachingRequestWrapper request) {
+    private void logRequest(ContentCachingRequestWrapper request) throws JsonProcessingException {
         var method = request.getMethod();
         var query = request.getQueryString();
         var uri = request.getRequestURI();
         log.info("Incoming Request: {} {}{}", method, uri, (query != null ? "?" + query : ""));
         var requestBody = new String(request.getContentAsByteArray(), StandardCharsets.UTF_8);
+        var root = objectMapper.readTree(requestBody);
+        if(root.has("password")) {
+            ((ObjectNode)root).put("password", "****");
+        }
+        requestBody = objectMapper.writeValueAsString(root);
         log.info("Request Body: {}", requestBody);
         log.info("Request Headers:");
         request.getHeaderNames().asIterator().forEachRemaining(headerName -> {

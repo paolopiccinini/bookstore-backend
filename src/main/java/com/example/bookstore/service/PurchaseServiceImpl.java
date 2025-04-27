@@ -34,14 +34,14 @@ public class PurchaseServiceImpl implements PurchaseService{
         var books = bookRepo.findAllByIsbnIn(isbns);
         log.info("finding customer");
         var customer = customerRepo.findById(username).orElse(new Customer(username));
-        log.info("Calculating the total");
-        double total = books.stream().mapToDouble(book -> book.calculatePrice(books.size())).sum();
-
+        var total = books.stream().mapToDouble(book -> book.calculatePrice(books.size())).sum();
+        log.info("Calculating the total {}", total);
 
         customer.setUsername(username);
         customer.addLoyaltyPoint(books.size());
         log.info("Updating loyalty points {}", customer.getLoyaltyPoints());
-        final var atomicTotal = new AtomicReference<Double>(total);
+        var atomicTotal = new AtomicReference<>(total);
+        var basicTotal = books.stream().mapToDouble(Book::getBasePrice).sum();
         if (customer.getLoyaltyPoints() >= 10) {
             log.info("loyalty points >= 10 calculating discount");
             // remove the min price to increase revenue
@@ -60,8 +60,9 @@ public class PurchaseServiceImpl implements PurchaseService{
         var result = new CalculatePriceResponse();
         result.setBooks(books.stream().map(book -> new CalculatePriceDto(book, books.size())).collect(Collectors.toSet()));
         result.setTotal(atomicTotal.get());
+        log.info("Resetting the total {}", atomicTotal.get());
         result.setLoyaltyPoints(customer.getLoyaltyPoints());
-        result.setSaved(books.stream().mapToDouble(Book::getBasePrice).sum() - atomicTotal.get());
+        result.setSaved(basicTotal - atomicTotal.get());
         var difference = new HashSet<>(isbns);
         difference.removeAll(books.stream().map(Book::getIsbn).collect(Collectors.toSet()));
         result.setIsbnsNotFound(difference);

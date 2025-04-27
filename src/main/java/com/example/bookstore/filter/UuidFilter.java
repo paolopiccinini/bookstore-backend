@@ -1,5 +1,6 @@
 package com.example.bookstore.filter;
 
+import com.example.bookstore.util.Constants;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,7 +22,7 @@ import java.util.UUID;
 @Order(1)
 public class UuidFilter extends OncePerRequestFilter {
 
-    private static final String CORRELATION_ID_HEADER = "X-Request-UUID";
+
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -30,12 +31,12 @@ public class UuidFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         var uuid = UUID.randomUUID().toString();
-        MDC.put(CORRELATION_ID_HEADER, uuid);
+        MDC.put(Constants.CORRELATION_ID_HEADER, uuid);
         try {
             var wrappedRequest = new HttpServletRequestWrapper(request) {
                 @Override
                 public String getHeader(String name) {
-                    if (CORRELATION_ID_HEADER.equalsIgnoreCase(name)) {
+                    if (Constants.CORRELATION_ID_HEADER.equalsIgnoreCase(name)) {
                         return uuid;
                     }
                     return super.getHeader(name);
@@ -44,22 +45,22 @@ public class UuidFilter extends OncePerRequestFilter {
                 @Override
                 public Enumeration<String> getHeaderNames() {
                     List<String> headerNames = Collections.list(super.getHeaderNames());
-                    headerNames.add(CORRELATION_ID_HEADER);
+                    headerNames.add(Constants.CORRELATION_ID_HEADER);
                     return Collections.enumeration(headerNames);
                 }
 
                 @Override
                 public Enumeration<String> getHeaders(String name) {
-                    if (CORRELATION_ID_HEADER.equalsIgnoreCase(name)) {
+                    if (Constants.CORRELATION_ID_HEADER.equalsIgnoreCase(name)) {
                         return Collections.enumeration(List.of(uuid));
                     }
                     return super.getHeaders(name);
                 }
             };
-            response.setHeader(CORRELATION_ID_HEADER, uuid);
+            response.setHeader(Constants.CORRELATION_ID_HEADER, uuid);
             filterChain.doFilter(wrappedRequest, response);
         } finally {
-            MDC.remove(CORRELATION_ID_HEADER);
+            MDC.remove(Constants.CORRELATION_ID_HEADER);
         }
     }
 }
