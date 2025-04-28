@@ -27,7 +27,6 @@ public class PurchaseServiceImpl implements PurchaseService{
     
     private final CustomerRepository customerRepo;
 
-    private final EntityManager entityManager;
 
     @Transactional
     public CalculatePriceResponse calculatePrice(Set<String> isbns) {
@@ -39,8 +38,6 @@ public class PurchaseServiceImpl implements PurchaseService{
         var customer = customerRepo.findById(username).orElse(new Customer(username));
         var total = books.stream().mapToDouble(book -> book.calculatePrice(books.size())).sum();
         log.info("Calculating the total {}", total);
-
-        customer.setUsername(username);
         customer.addLoyaltyPoint(books.size());
         log.info("Updating loyalty points {}", customer.getLoyaltyPoints());
         var atomicTotal = new AtomicReference<>(total);
@@ -55,14 +52,13 @@ public class PurchaseServiceImpl implements PurchaseService{
                     .reduce((a, b) -> a.calculatePrice(books.size()) > b.calculatePrice(books.size()) ? b : a)
                     .ifPresent(book -> {
                         atomicTotal.updateAndGet(v -> v - book.calculatePrice(books.size()));
-                        entityManager.detach(book);
-                        book.setBasePrice(0.0);
+                        book.setGratis(true);
                         customer.setLoyaltyPoints(0);
                         log.info("loyalty points resetting to 0");
                     });
         }
         var result = new CalculatePriceResponse();
-        result.setBooks(books.stream().map(book -> new CalculatePriceDto(book, books.size())).collect(Collectors.toSet()));
+        result.setBooks(books.stream().map(book -> book.convertToDto(books.size())).collect(Collectors.toSet()));
         result.setTotal(atomicTotal.get());
         log.info("Resetting the total {}", atomicTotal.get());
         result.setLoyaltyPoints(customer.getLoyaltyPoints());

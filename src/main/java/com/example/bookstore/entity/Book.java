@@ -2,6 +2,7 @@ package com.example.bookstore.entity;
 
 import com.example.bookstore.dto.BookDto;
 import com.example.bookstore.dto.BookType;
+import com.example.bookstore.dto.CalculatePriceDto;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,9 @@ public abstract class Book {
     private String author;
     private double basePrice;
 
+    @Transient
+    private boolean gratis;
+
     public Book(BookDto request) {
         isbn = request.getIsbn();
         title = request.getTitle();
@@ -36,6 +40,10 @@ public abstract class Book {
 
     public BookDto convertToDto() {
         return new BookDto(this);
+    }
+
+    public CalculatePriceDto convertToDto(int numOfBooks) {
+        return new CalculatePriceDto(this, numOfBooks);
     }
 
 }
