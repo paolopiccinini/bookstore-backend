@@ -6,6 +6,7 @@ import com.example.bookstore.entity.Book;
 import com.example.bookstore.entity.Customer;
 import com.example.bookstore.repository.BookRepository;
 import com.example.bookstore.repository.CustomerRepository;
+import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +26,8 @@ public class PurchaseServiceImpl implements PurchaseService{
     private final BookRepository bookRepo;
     
     private final CustomerRepository customerRepo;
+
+    private final EntityManager entityManager;
 
     @Transactional
     public CalculatePriceResponse calculatePrice(Set<String> isbns) {
@@ -52,10 +55,11 @@ public class PurchaseServiceImpl implements PurchaseService{
                     .reduce((a, b) -> a.calculatePrice(books.size()) > b.calculatePrice(books.size()) ? b : a)
                     .ifPresent(book -> {
                         atomicTotal.updateAndGet(v -> v - book.calculatePrice(books.size()));
-                        book.setBasePrice(0);
+                        entityManager.detach(book);
+                        book.setBasePrice(0.0);
+                        customer.setLoyaltyPoints(0);
+                        log.info("loyalty points resetting to 0");
                     });
-            log.info("loyalty points resetting to 0");
-            customer.setLoyaltyPoints(0);
         }
         var result = new CalculatePriceResponse();
         result.setBooks(books.stream().map(book -> new CalculatePriceDto(book, books.size())).collect(Collectors.toSet()));
