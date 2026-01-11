@@ -1,0 +1,7 @@
+{
+  "isbn": "#{isbn}",
+  "title": "#{title}",
+  "author": "#{author}",
+  "basePrice": #{basePrice},
+  "bookType": "#{bookType}"
+}
